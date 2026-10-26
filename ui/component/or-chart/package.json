@@ -25,7 +25,7 @@
     "prepack": "npx rspack"
   },
   "author": "OpenRemote",
-  "repository": "https://github.com/openremote/openremote",
+  "repository": "https://github.com/openremote/core",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@material/data-table": "^9.0.0",
@@ -44,7 +44,7 @@
     "echarts": "~6.1.0",
     "lit": "^3.3.1",
     "lodash.debounce": "^4.0.8",
-    "moment": "^2.29.4"
+    "moment": "^2.31.0"
   },
   "devDependencies": {
     "@openremote/util": "workspace:*",

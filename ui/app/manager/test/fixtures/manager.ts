@@ -138,6 +138,16 @@ export class Manager {
   }
 
   /**
+   * Switch the app language using the language dialog in the settings menu at the top right.
+   * This also stores it as the user's locale, so reset it with {@link resetLocale} afterwards.
+   * @param language Name of the language as the dialog lists it, in the current app language
+   */
+  async switchLanguage(language: string) {
+    await this.navigateToMenuItem("Language");
+    await this.page.locator("or-vaadin-list-box:visible").getByRole("option").filter({ hasText: language }).click();
+  }
+
+  /**
    * Switch to a realm using the realm picker
    * @param name Name of the realm
    */
@@ -426,7 +436,7 @@ export class Manager {
    */
   async resetUserPassword(config?: AxiosRequestConfig<any>) {
     try {
-      const response = await rest.api.UserResource.resetPassword(
+      const response = await rest.api.UserResource.updatePassword(
         this.realm!,
         this.user!.id!,
         { value: smartcity.password },
@@ -511,7 +521,6 @@ export class Manager {
 
     // Provision assets
     if (assets) {
-      this.assets = [];
       for (const asset of assets) {
         await this.createAsset(asset, config);
       }
@@ -562,6 +571,52 @@ export class Manager {
       this.assets = [];
     } catch (e) {
       warnOnHttpError(e, "Could not delete asset(s): ", assetIds);
+    }
+  }
+
+  /**
+   * Deletes all assets in a realm
+   * @param realm The realm
+   * @param config The axios request config
+   */
+  async deleteAssetsInRealm(realm: string, config?: AxiosRequestConfig<any>) {
+    config = config ?? (await this.adminConfig());
+
+    const assetIdRetreiver = async () => {
+      const assetResponse = await rest.api.AssetResource.queryAssets(
+        {
+          select: { attributes: [] },
+          realm: { name: realm },
+        },
+        config
+      );
+      expect(assetResponse.status).toBe(200);
+      const assets = assetResponse.data;
+      return assets.map(({ id }) => id!);
+    };
+
+    let assetIds = await assetIdRetreiver();
+
+    while (assetIds.length > 0) {
+      const response = await rest.api.AssetResource.delete({ assetId: assetIds }, config);
+      expect(response.status).toBe(204);
+      // Wait for these assets to be deleted
+      await expect
+        .poll(async () => {
+          const countResponse = await rest.api.AssetResource.queryCount(
+            {
+              select: { attributes: [] },
+              ids: assetIds,
+              realm: { name: realm },
+              includeDeletePending: true,
+            },
+            config
+          );
+          expect(countResponse.status).toBe(200);
+          return countResponse.data;
+        })
+        .toBe(0);
+      assetIds = await assetIdRetreiver();
     }
   }
 

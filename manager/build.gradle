@@ -37,6 +37,7 @@ dependencies {
   implementation libs.angusMail
   implementation libs.swaggerJaxrs2Jakarta
   implementation libs.camelUndertow
+  implementation libs.twelveMonkeysImageIoBmp
 
   // Indirect dep from org.apache.activemq:artemis-mqtt-protocol
   api(libs.nettyCodecMqtt) {
@@ -165,7 +166,6 @@ java {
   withSourcesJar()
 }
 
-def openApiJsonFile = layout.buildDirectory.file('openapi/openapi.json')
 def openApiYamlFile = layout.buildDirectory.file('openapi/openapi.yaml')
 
 publishing {
@@ -174,12 +174,6 @@ publishing {
       group = "io.openremote"
       artifactId = "openremote-${project.name}"
       from components.java
-
-      artifact(openApiJsonFile) {
-        classifier = 'openapi'
-        extension = 'json'
-        builtBy tasks.named('resolve')
-      }
 
       artifact(openApiYamlFile) {
         classifier = 'openapi'
@@ -190,7 +184,7 @@ publishing {
       pom {
         name = 'OpenRemote Manager'
         description = 'Provides core container services and is the main component of the OpenRemote backend; add maven {url "https://repo.osgeo.org/repository/release/"} and maven {url "https://pkgs.dev.azure.com/OpenRemote/OpenRemote/_packaging/OpenRemote/maven/v1"} to resolve all dependencies'
-        url = 'https://github.com/openremote/openremote'
+        url = 'https://github.com/openremote/core'
         licenses {
           license {
             name = 'GNU Affero General Public License v3.0'
@@ -207,9 +201,9 @@ publishing {
           }
         }
         scm {
-          connection = 'scm:git:git://github.com/openremote/openremote.git'
-          developerConnection = 'scm:git:ssh://github.com:openremote/openremote.git'
-          url = 'https://github.com/openremote/openremote/tree/master'
+          connection = 'scm:git:git://github.com/openremote/core.git'
+          developerConnection = 'scm:git:ssh://github.com:openremote/core.git'
+          url = 'https://github.com/openremote/core/tree/main'
         }
       }
     }
